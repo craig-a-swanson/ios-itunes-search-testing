@@ -10,19 +10,23 @@ import UIKit
 
 class ItunesSearchTableViewController: UITableViewController, UISearchBarDelegate {
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        searchBar.delegate = self
+    let searchResultController = SearchResultController()
+    
+    @IBOutlet weak var resultTypeSegmentedControl: UISegmentedControl!
+    @IBOutlet weak var searchBar: UISearchBar! {
+        didSet {
+            searchBar.delegate = self
+        }
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-    
+        
+        // Validating the input.
         guard let searchTerm = searchBar.text,
             searchTerm != "" else { return }
     
+        // User-selected category.
         var resultType: ResultType!
-        
         switch resultTypeSegmentedControl.selectedSegmentIndex {
         case 0:
             resultType = .software
@@ -34,15 +38,17 @@ class ItunesSearchTableViewController: UITableViewController, UISearchBarDelegat
             break
         }
         
-        searchResultController.performSearch(for: searchTerm, resultType: resultType) {
+        searchResultController.performSearch(for: searchTerm, resultType: resultType, networkDependency: URLSession.shared) {
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
         }
     }
-    
-    // MARK: - Table view data source
+}
 
+// Data Source Methods
+extension ItunesSearchTableViewController {
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return searchResultController.searchResults.count
     }
@@ -57,12 +63,4 @@ class ItunesSearchTableViewController: UITableViewController, UISearchBarDelegat
 
         return cell
     }
-
-
-    let searchResultController = SearchResultController()
-    
-    @IBOutlet weak var resultTypeSegmentedControl: UISegmentedControl!
-    @IBOutlet weak var searchBar: UISearchBar!
-    
-
 }
